@@ -1,12 +1,14 @@
-function Output = preprocessForaging()
+function Output = preprocessForaging(TestName)
 DataFolder = 'D:\Data\Psychophysics\Foraging\';
-TestName = '17031301';
+
 DATA = load([DataFolder,TestName,'.mat']);
 X = DATA.FORAGEresult.eyeX;
 Y = DATA.FORAGEresult.eyeY;
 FixationX = DATA.FORAGEresult.FixationX;
 FixationY = DATA.FORAGEresult.FixationY;
 Jitters = DATA.FORAGEresult.Jitters;
+numTrialsPerBlock = 10;
+
 
 targetLocation = DATA.FORAGEresult.thisTargetLocation;
 fixationLocation = DATA.FORAGEresult.thisFixationLocation;
@@ -47,7 +49,12 @@ Output.Jitters = sortedJitters;
 % learning curves
 Latency = cellfun(@(x)length(x),Xsorted);
 Output.Latency = Latency;
+numBlocks = size(Latency,2)/numTrialsPerBlock; % 
+for blockcount = 1:numBlocks
+    Latencysmooth(:,blockcount) = mean(Latency(:,((blockcount-1)*numTrialsPerBlock+1):(blockcount)*numTrialsPerBlock),2);
+end
 
+Output.Latencysmooth = Latencysmooth;
 
 
 

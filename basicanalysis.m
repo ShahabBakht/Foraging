@@ -1,3 +1,6 @@
+TestName = '17031301';
+DataFolder = 'D:\Data\Psychophysics\Foraging\';
+load([DataFolder,TestName]);
 trialOrder = FVresult1.trialsOrder;
 allTrials = FVresult1.allTrials;
 fixX = FVresult1.FixationX;
@@ -8,8 +11,39 @@ allTrials2 = FVresult2.allTrials;
 fixX2 = FVresult2.FixationX;
 fixY2 = FVresult2.FixationY;
 
+winHeight = FORAGEresult.winHeight;
+winWidth = FORAGEresult.winWidth;
+wRect = FORAGEresult.wRect;
+ScreenCov_h = FORAGEresult.StimulusObject.ScreenCov_h;
+ScreenCov_v = FORAGEresult.StimulusObject.ScreenCov_v;
+maxJitter = FORAGEresult.StimulusObject.maxJitter;
+PPD_X = FORAGEresult.StimulusObject.PPD_X;
+
+scaleBGh = (wRect(3) * ScreenCov_h/2 - maxJitter*PPD_X)/(wRect(3) * ScreenCov_h/2);
+    scaleBGv = (wRect(3) * ScreenCov_v/2 - maxJitter*PPD_X)/(wRect(3) * ScreenCov_v/2);
+
+    % part of the screen that have been used to show images
+windowSubPart_0 = [...
+        winWidth/2 + 0 - (wRect(3) * ScreenCov_h/2) * scaleBGh,...
+        winHeight/2 + 0 - (wRect(4) * ScreenCov_v/2) * scaleBGv, ...
+        winWidth/2 + 0 + (wRect(3) * ScreenCov_h/2) * scaleBGh, ...
+        winHeight/2 + 0 + (wRect(4) * ScreenCov_v/2) * scaleBGv ...
+        ];
+    
+    
+windowSubPart_1 = [...
+winWidth/2 + 0 - (wRect(3) * ScreenCov_h/2) * 1,...
+winHeight/2 + 0 - (wRect(4) * ScreenCov_v/2) * 1, ...
+winWidth/2 + 0 + (wRect(3) * ScreenCov_h/2) * 1, ...
+winHeight/2 + 0 + (wRect(4) * ScreenCov_v/2) * 1 ...
+];
+
 counter = zeros(3,2);
 counter2 = zeros(3,2);
+
+
+
+    
 
 for i = 1:40
     imcount = allTrials(1,trialOrder(i));
@@ -57,6 +91,7 @@ X = Output.Xsorted;
 Y = Output.Ysorted;
 Jitters = Output.Jitters;
 Latency = Output.Latency/1000;
+Latencysmooth = Output.Latencysmooth/1000;
 clickTargetPosition = CLICKresult.targetPosition;
 TargetLocation = Output.targetLocationsorted;
 
@@ -64,6 +99,13 @@ figure;subplot(2,2,1);plot(Latency(1,:),'o'); ...
 subplot(2,2,2); plot(Latency(2,:),'o'); ...
 subplot(2,2,3); plot(Latency(3,:),'o'); ...
 subplot(2,2,4); plot(Latency(4,:),'o');
+
+figure;subplot(2,2,1);plot(Latencysmooth(1,:),'o-'); ...
+subplot(2,2,2); plot(Latencysmooth(2,:),'o-'); ...
+subplot(2,2,3); plot(Latencysmooth(3,:),'o-'); ...
+subplot(2,2,4); plot(Latencysmooth(4,:),'o-');
+
+
 
 k = 0;
 figure(15)
@@ -88,13 +130,21 @@ for trcount = 1:10:50
     end
     VAR(imcount,trcount) = mean(sqrt(var(thisFixX) + var(thisFixY)));
     thisIMG = imread(['D:\Data\Psychophysics\Foraging\BGImages\17031301\',FORAGEresult.StimulusObject.BGImages2Use(imcount,:)]);
+    thisSM = imread(['D:\Data\Psychophysics\Foraging\BGImages\17031301\Deep Gaze II\1\',FORAGEresult.StimulusObject.BGImages2Use(imcount,:)]);
     thisIMG = imresize(thisIMG,[windowSubPart_0(4)-windowSubPart_0(2),windowSubPart_0(3)-windowSubPart_0(1)]);
+    thisSM = imresize(thisSM,[windowSubPart_0(4)-windowSubPart_0(2),windowSubPart_0(3)-windowSubPart_0(1)]);
    figure(13); subplot(4,5,k);imshow(thisIMG)
     hold on
     figure(13);subplot(4,5,k);plot(thisFixX,thisFixY,'.g','MarkerSize',15);set(gca,'YDir','Reverse');xlim([0,windowSubPart_0(3) - windowSubPart_0(1)]);ylim([0,windowSubPart_0(4) - windowSubPart_0(2)]);
     hold on
     figure(13);subplot(4,5,k);plot(thisTargetX,thisTargetY,'*r');set(gca,'YDir','Reverse');xlim([0,windowSubPart_0(3) - windowSubPart_0(1)]);ylim([0,windowSubPart_0(4) - windowSubPart_0(2)]);
-%     tempclickTargetPositionX = clickTargetPosition(1,imcount) - windowSubPart_0(1);
+    figure(14); subplot(4,5,k);imagesc(thisSM);axis image; colormap(gray)
+    hold on
+    figure(14);subplot(4,5,k);plot(thisFixX,thisFixY,'.g','MarkerSize',15);set(gca,'YDir','Reverse');xlim([0,windowSubPart_0(3) - windowSubPart_0(1)]);ylim([0,windowSubPart_0(4) - windowSubPart_0(2)]);
+    hold on
+    figure(14);subplot(4,5,k);plot(thisTargetX,thisTargetY,'.r');set(gca,'YDir','Reverse');xlim([0,windowSubPart_0(3) - windowSubPart_0(1)]);ylim([0,windowSubPart_0(4) - windowSubPart_0(2)]);
+
+    %     tempclickTargetPositionX = clickTargetPosition(1,imcount) - windowSubPart_0(1);
 %     tempclickTargetPositionY = clickTargetPosition(2,imcount) - windowSubPart_0(2);
 %     subplot(4,5,k);plot(tempclickTargetPositionX,tempclickTargetPositionY,'og')
     
@@ -105,15 +155,67 @@ figure;
 
 for imcount = 1:4
     thisIMG = imread(['D:\Data\Psychophysics\Foraging\BGImages\17031301\',FORAGEresult.StimulusObject.BGImages2Use(imcount,:)]);
-    subplot(2,2,imcount);imshow(imresize((thisIMG),[size(thisIMG,1)*S.ScreenCov_v,size(thisIMG,2)*S.ScreenCov_h]));
+    subplot(2,2,imcount);imshow(imresize((thisIMG),[size(thisIMG,1)*ScreenCov_v,size(thisIMG,2)*ScreenCov_h]));
 end
 
-windowSubPart_0 = [...
-        winWidth/2 + 0 - (wRect(3) * S.ScreenCov_h/2) * scaleBGh,...
-        winHeight/2 + 0 - (wRect(4) * S.ScreenCov_v/2) * scaleBGv, ...
-        winWidth/2 + 0 + (wRect(3) * S.ScreenCov_h/2) * scaleBGh, ...
-        winHeight/2 + 0 + (wRect(4) * S.ScreenCov_v/2) * scaleBGv ...
-        ];
-    
+%% load SaliencyMap
 
-    
+SaliencyMap = imread('D:\Data\Psychophysics\Foraging\BGImages\17031301\Deep Gaze II\1\34.png');
+SaliencyMap_resize = imresize((SaliencyMap),[windowSubPart_1(4)-windowSubPart_1(2),windowSubPart_1(3)-windowSubPart_1(1)]);
+
+FVmap = zeros(size(SaliencyMap_resize));
+FVmap2 = zeros(size(SaliencyMap_resize));
+
+typecount = 1; imcount = 2;count = 0;
+for trcount = 1:10
+sampleFIXy = FIXy{imcount,typecount,trcount}- windowSubPart_1(2);
+sampleFIXx = FIXx{imcount,typecount,trcount}- windowSubPart_1(1);
+
+sampleFIXyint = round(sampleFIXy);
+sampleFIXxint = round(sampleFIXx);
+sampleFIXyint_inbound = sampleFIXyint;sampleFIXxint_inbound = sampleFIXxint;
+
+xremoveidx = sampleFIXyint>size(FVmap,1) | sampleFIXxint>size(FVmap,2) | sampleFIXyint<=0 | sampleFIXxint<=0;
+yremoveidx = sampleFIXxint>size(FVmap,2) | sampleFIXyint>size(FVmap,1) | sampleFIXyint<=0 | sampleFIXxint<=0;
+sampleFIXxint_inbound(xremoveidx) = [];sampleFIXyint_inbound(yremoveidx) = [];
+
+
+
+for fixcount = 1:length(sampleFIXyint_inbound)
+FVmap(sampleFIXyint_inbound(fixcount),sampleFIXxint_inbound(fixcount)) = FVmap(sampleFIXyint_inbound(fixcount),sampleFIXxint_inbound(fixcount)) + SaliencyMap_resize(sampleFIXyint_inbound(fixcount),sampleFIXxint_inbound(fixcount));
+end
+
+sampleFIXy = FIXy2{imcount,typecount,trcount}- windowSubPart_1(2);
+sampleFIXx = FIXx2{imcount,typecount,trcount}- windowSubPart_1(1);
+
+sampleFIXyint = round(sampleFIXy);
+sampleFIXxint = round(sampleFIXx);
+sampleFIXyint_inbound = sampleFIXyint;sampleFIXxint_inbound = sampleFIXxint;
+xremoveidx = sampleFIXyint>size(FVmap,1) | sampleFIXxint>size(FVmap,2) | sampleFIXyint<=0 | sampleFIXxint<=0;
+yremoveidx = sampleFIXxint>size(FVmap,2) | sampleFIXyint>size(FVmap,1) | sampleFIXyint<=0 | sampleFIXxint<=0;
+sampleFIXxint_inbound(xremoveidx) = [];sampleFIXyint_inbound(yremoveidx) = [];
+
+
+
+for fixcount = 1:length(sampleFIXxint_inbound)
+FVmap2(sampleFIXyint_inbound(fixcount),sampleFIXxint_inbound(fixcount)) = FVmap2(sampleFIXyint_inbound(fixcount),sampleFIXxint_inbound(fixcount)) + SaliencyMap_resize(sampleFIXyint_inbound(fixcount),sampleFIXxint_inbound(fixcount));
+end
+
+end
+
+% h = fspecial('average',20);
+% h = fspecial('gaussian', 20, 10);
+% FVmap = imfilter(FVmap,h);
+% FVmap = (FVmap - min(min(FVmap)))./(max(max(FVmap)) - min(min(FVmap)));
+% FVmap2 = imfilter(FVmap2,h);
+% FVmap2 = (FVmap2 - min(min(FVmap2)))./(max(max(FVmap2)) - min(min(FVmap2)));
+% 
+posterior = FVmap./sum(sum(FVmap));
+posterior2 = FVmap2./sum(sum(FVmap2));
+evidence = sum(sum(FVmap));
+evidence2 = sum(sum(FVmap2));
+
+% 
+% r2 = corr2(FVmap2,SaliencyMap_resize);
+%     
+
