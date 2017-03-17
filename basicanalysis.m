@@ -160,7 +160,7 @@ end
 
 %% load SaliencyMap
 
-SaliencyMap = imread('D:\Data\Psychophysics\Foraging\BGImages\17031301\Deep Gaze II\1\34.png');
+SaliencyMap = imread('D:\Data\Psychophysics\Foraging\BGImages\17031301\Deep Gaze II\1\38.png');
 SaliencyMap_resize = imresize((SaliencyMap),[windowSubPart_1(4)-windowSubPart_1(2),windowSubPart_1(3)-windowSubPart_1(1)]);
 
 FVmap = zeros(size(SaliencyMap_resize));
